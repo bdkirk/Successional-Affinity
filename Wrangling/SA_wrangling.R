@@ -2,9 +2,6 @@
 
 # This file will look at successional affinity and ecological attributes of the seed
 
-# RERUN based on updates to affinity of miconia affinis.
-
-
 # load libraries
 library(readxl); library(plyr); library(ggplot2); library(reshape2); library(base); library(dplyr); library(scales)
 
@@ -28,7 +25,7 @@ str(sa_seed2)
 
 # remove rows where no successional affinity is available
 
-sa_seed3 <- filter(sa_seed2, suc_affinity != "NA")
+#sa_seed3 <- filter(sa_seed2, suc_affinity != "NA")
 # 59 species classified to suc_affinity
 
 # Need to add abundance data from each treatment to determine richness.
@@ -37,7 +34,7 @@ sa_seed3 <- filter(sa_seed2, suc_affinity != "NA")
 abund <- read.csv("abund_summary_year_notrtsp_nw.csv")
 abund2 <- subset(abund, select = c(1:5))
 
-sa_abund <- left_join(sa_seed3, abund2, by = "species")
+sa_abund <- left_join(sa_seed2, abund2, by = "species")
 summary(sa_abund)
 
 sa_abund2 <- melt(sa_abund, id.vars = c("species", "dispersal", "lifeform", "size_cat", "suc_affinity"), value=seednum)
