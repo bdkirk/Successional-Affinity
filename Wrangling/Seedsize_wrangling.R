@@ -24,7 +24,7 @@ str(size2)
 
 # remove rows where no size category is available
 
-size3 <- filter(size2, size_cat != "NA")
+#size3 <- filter(size2, size_cat != "NA")
 # 91 species classified to suc_affinity
 
 # Need to add abundance data from each treatment to determine richness.
@@ -33,7 +33,7 @@ size3 <- filter(size2, size_cat != "NA")
 abund <- read.csv("abund_summary_year_notrtsp_nw.csv")
 abund2 <- subset(abund, select = c(1:5))
 
-size_abund <- left_join(size3, abund2, by = "species")
+size_abund <- left_join(size2, abund2, by = "species")
 summary(size_abund)
 
 size_abund2 <- melt(size_abund, id.vars = c("species", "dispersal", "lifeform", "size_cat"), value=seednum)
