@@ -43,8 +43,31 @@ size_abund3 <- filter(size_abund2, value >= 1)
 size_abund4 <- ddply(size_abund3, .(variable, size_cat), summarise, seednum=sum(value))
 str(size_abund4)
 
-size_abund5 <- size_abund4 %>% group_by(variable) %>% summarise(trt_tot = sum(seednum)) %>% right_join(size_abund4) %>% mutate(percent = percent(seednum/trt_tot))
+size_abund5 <- size_abund4 %>% group_by(variable) %>% summarise(trt_tot = sum(seednum)) %>% right_join(size_abund4) %>% mutate(percent = ((seednum/trt_tot)*100))
 
 # number of species within each successional affinity
 size_abund6 <- ddply(size_abund3, .(variable, size_cat), summarise, richness = length(species))
+
+
+
+# Making a stacked bar chart of species richness by seed size category
+
+ggplot(size_abund6, aes(variable, richness))+
+  geom_col(aes(fill = size_cat), position = "dodge")+
+  labs(x="Treatment", y= "Species Richness") + 
+  theme_bw()+
+  scale_x_discrete(limits = c("Hial", "Viko", "Pema", "Vogu"))+
+  scale_fill_discrete(name= "Seed Size", labels= c("Large", "Medium", "Small", "Unknown"))
+
+
+# Making a stacked bar chart of percent by seed size category
+library(ggthemes)
+
+ggplot(size_abund5, aes(variable, percent))+ 
+  geom_bar(aes(fill = size_cat), position = "dodge", stat = "identity")+
+  labs(x="Treatment", y= "Total Seeds") +
+  theme_bw()+
+  scale_x_discrete(limits = c("Hial", "Viko", "Pema", "Vogu"))+
+  scale_fill_discrete(name= "Seed Size", labels= c("Large", "Medium", "Small", "Unknown"))
+
 
