@@ -49,3 +49,47 @@ sa_abund5 <- sa_abund4 %>% group_by(variable) %>% summarise(trt_tot = sum(seednu
 # number of species within each successional affinity
 sa_abund6 <- ddply(sa_abund3, .(variable, suc_affinity), summarise, richness = length(species))
 
+
+# Consider looking at successional affinity of species with adults absent from plots
+
+# bring in data
+adults <- read_excel("ECOS_SeedRain_9Sept17_ar.xlsx", sheet = 2, col_names=TRUE, na= "NA")
+
+#remove column of raw, uncorrected data
+adults2 <- subset(adults, select = c(2, 4))
+colnames(adults2) <- c("species", "adult")
+str(adults2)
+adults2$species <- as.factor(adults2$species)
+adults2$species <- tolower(adults2$species)
+
+adult_sa <- merge(sa_abund3, adults2, by = "species")
+
+# 1) Does the richness or abundance of seed vary by treatment?
+
+## a) abundance
+abund_source <- ddply(adult_sa, .(variable, adult), summarise, seednum=sum(value))
+
+ggplot(abund_source, aes(variable, seednum))+
+  geom_bar(aes(fill= adult),stat= "identity", position = "dodge")
+
+## b) richness
+rich_source <- ddply(adult_sa, .(variable, adult), summarise, richness = length(species))
+
+ggplot(rich_source, aes(variable, richness))+
+  geom_bar(aes(fill= adult),stat= "identity", position = "dodge")
+
+# 2) Does the SA vary across treatments for incoming species seeds?
+sa_yes <- filter(adult_sa, adult =="y")
+sa_yes2 <- ddply(sa_yes, .(variable))
+
+sa_no <- filter(adult_sa, adult =="n")
+summary(sa_no)
+
+
+## a) What is difference between species with adults present and adults absent?
+
+
+
+# 3) Does the seed size vary across treatments for incoming seed species?
+
+# answered above in summary
