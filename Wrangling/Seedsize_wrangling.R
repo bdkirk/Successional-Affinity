@@ -11,7 +11,7 @@ setwd("~/M.S. Thesis/Data/GitHubProjects/Succession/Data/Raw")
 # Bring in data
 size <-read_excel("Seedsize_sa.xlsx", sheet=2, col_names=TRUE, na= "NA")
 
-# subset data to include only columns for successional affinity analysis
+# subset data to include only columns for seed size analysis
 
 size2 <- subset(size, select = c(3, 4, 5, 6))
 
