@@ -43,11 +43,134 @@ rich_mesh <- ddply(size_mesh2, .(meshtype, size_cat), summarise, richness= lengt
 ggplot(rich_mesh, aes(size_cat, richness))+
   geom_bar(aes(fill=meshtype), stat = "identity", position = "dodge")
 
-# 3. evaluate what species are being missed. 
-
-dispersal_mesh <- ddply(size_mesh2, .(meshtype, dispersal), summarise, seednum=sum(seednum))
-
-lifeform_mesh <- ddply(size_mesh2, .(meshtype, lifeform), summarise, seednum=sum(seednum))
-
+rich_mesh2 <- ddply(size_mesh2, .(size_cat, meshtype), summarise, richness= length(species))
 
 ## None of the above incorporates treatment.
+
+# The below text does not correctly get the ratio because it would be by species and treatment.
+
+# I want to get the ratio of seeds of a particular species and the abundance.
+
+ # size mesh file has categories of species broken into regular and fine
+
+reg_ratio <- ddply(size_mesh, .(size_cat), summarise, reg=(sum(meshreg)/2))
+
+sm_ratio <- ddply(size_mesh, .(size_cat), summarise, small=(sum(meshsmall)/3))
+
+ratio <- left_join(sm_ratio, reg_ratio, by = "size_cat")
+ratio$ratio <- ((ratio$reg)/(ratio$small))
+
+# think about plotting the boxplot, 
+# boxplot requires multiple variables. May need to break this down by plot? or treatment?
+
+# by species?
+
+size_mesh$ratio <- (size_mesh$meshreg/2)/(size_mesh$meshsmall/3)
+
+size_mesh$ratio2 <- ((size_mesh$meshreg/2)+0.1)/((size_mesh$meshsmall/3)+0.1)
+# Plot ratios by size category!!
+
+ggplot(size_mesh, aes(size_cat, ratio))+
+  geom_boxplot()+
+  ylim(0, 6)
+
+
+# Talked to Katie Rey. Try changing to percentages.
+size_mesh$total <- (size_mesh$meshreg/2) + (size_mesh$meshsmall/3)
+size_mesh$reg_percent <- ((size_mesh$meshreg/2)/size_mesh$total)*100
+
+# get median values to put on boxplot
+size_med <- ddply(size_mesh, .(size_cat), summarise, med= median(reg_percent))
+str(size_med)
+size_med$size_cat <- as.factor(size_med$size_cat)
+
+ggplot(size_mesh, aes(size_cat, reg_percent))+
+  geom_boxplot()+
+  theme_classic()+
+  ylab("Capture efficency of regular mesh")+
+  xlab("Seed Sizes")+
+  geom_text(size_med, aes(x= size_cat, y= med, label = med), size = 3, vjust =0.5)
+  #scale_fill_manual(labels= c("Large", "Medium", "Small", "Very Small"))# last line isn't working.
+
+# look at species capture efficiency: 
+
+
+# Functional groups: 
+
+
+
+#1) Dispersal mode
+
+# % of seeds within each dispersal mode category
+dispersal <- ddply(size_mesh2, .(meshtype, dispersal), summarise, seednum=sum(seednum))
+str(dispersal)
+
+dispersal2 <- dispersal %>% group_by(meshtype) %>% summarise(mesh_tot = sum(seednum)) %>% right_join(dispersal) %>% mutate(percent = percent(seednum/mesh_tot))
+
+# number of species within each successional affinity
+dispersal3 <- ddply(size_mesh2, .(meshtype, dispersal), summarise, richness = length(species))
+
+# 2) Life form
+# % of seeds within each dispersal mode category
+lifeform <- ddply(size_mesh2, .(meshtype, lifeform), summarise, seednum=sum(seednum))
+str(lifeform)
+
+lifeform2 <- lifeform %>% group_by(meshtype) %>% summarise(mesh_tot = sum(seednum)) %>% right_join(lifeform) %>% mutate(percent = percent(seednum/mesh_tot))
+
+# number of species within each successional affinity
+lifeform3 <- ddply(size_mesh2, .(meshtype, lifeform), summarise, richness = length(species))
+
+# 3) Successional affinity
+# % of seeds within each dispersal mode category
+sucaffinity <- ddply(size_mesh2, .(meshtype, suc_affinity), summarise, seednum=sum(seednum))
+str(sucaffinity)
+
+sucaffinity2 <- sucaffinity %>% group_by(meshtype) %>% summarise(mesh_tot = sum(seednum)) %>% right_join(sucaffinity) %>% mutate(percent = percent(seednum/mesh_tot))
+
+# number of species within each successional affinity
+sucaffinity3 <- ddply(size_mesh2, .(meshtype, suc_affinity), summarise, richness = length(species))
+
+# 4) What about the seed source?
+
+adults <- read_excel("ECOS_SeedRain_9Sept17_ar.xlsx", sheet = 2, col_names=TRUE, na= "NA")
+
+#remove column of raw, uncorrected data
+adults2 <- subset(adults, select = c(2, 4))
+colnames(adults2) <- c("species", "adult")
+str(adults2)
+adults2$species <- as.factor(adults2$species)
+adults2$species <- tolower(adults2$species)
+
+adult_mesh <- merge(size_mesh2, adults2, by = "species")
+adult_mesh$species <- as.factor(adult_mesh$species)
+adult_mesh$lifeform <- as.factor(adult_mesh$lifeform)
+adult_mesh$size_cat <- as.factor(adult_mesh$size_cat)
+adult_mesh$adult <- as.factor(adult_mesh$adult)
+adult_mesh$meshtype <- as.factor(adult_mesh$meshtype)
+adult_mesh$suc_affinity <- as.factor(adult_mesh$suc_affinity)
+adult_mesh$dispersal <- as.factor(adult_mesh$dispersal)
+
+mesh_yes <- filter(adult_mesh, adult =="y")
+summary(mesh_yes)
+
+
+mesh_no <- filter(adult_mesh, adult =="n")
+summary(mesh_no)
+
+##### Make tables for paper of species that were caught in small sized mesh but not found there. ####
+
+# 1) Table of vs seeds not capture in regular mesh
+
+
+
+# 2) Table of other sized seeds not captured in regular mesh
+
+
+
+
+
+# 3) Table of seeds captured in regular mesh that were not captured in the small mesh?
+
+
+
+# 
