@@ -78,6 +78,8 @@ ggplot(size_mesh, aes(size_cat, ratio))+
 # Talked to Katie Rey. Try changing to percentages.
 size_mesh$total <- (size_mesh$meshreg/2) + (size_mesh$meshsmall/3)
 size_mesh$reg_percent <- ((size_mesh$meshreg/2)/size_mesh$total)*100
+size_mesh$fine_percent <- ((size_mesh$meshsmall/3)/size_mesh$total)*100
+
 
 # get median values to put on boxplot
 size_med <- ddply(size_mesh, .(size_cat), summarise, med= median(reg_percent))
@@ -91,6 +93,12 @@ ggplot(size_mesh, aes(size_cat, reg_percent))+
   xlab("Seed Sizes")+
   geom_text(size_med, aes(x= size_cat, y= med, label = med), size = 3, vjust =0.5)
   #scale_fill_manual(labels= c("Large", "Medium", "Small", "Very Small"))# last line isn't working.
+
+ggplot(size_mesh, aes(size_cat, fine_percent))+
+  geom_boxplot()+
+  theme_classic()+
+  ylab("Capture efficency of fine mesh")+
+  xlab("Seed Sizes")
 
 # look at species capture efficiency: 
 
