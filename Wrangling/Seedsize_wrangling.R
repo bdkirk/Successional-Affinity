@@ -36,6 +36,10 @@ abund2 <- subset(abund, select = c(1:5))
 size_abund <- left_join(size2, abund2, by = "species")
 summary(size_abund)
 
+#To create table for treatment effects and most abundant species by size with other attributes
+size_abund_table <- size_abund
+size_abund_table$total <- size_abund$Hial+size_abund$Pema+size_abund$Viko+size_abund$Vogu
+
 size_abund2 <- melt(size_abund, id.vars = c("species", "dispersal", "lifeform", "size_cat"), value=seednum)
 size_abund3 <- filter(size_abund2, value >= 1)
 
