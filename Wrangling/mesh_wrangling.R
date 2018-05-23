@@ -21,6 +21,13 @@ spp_abund <- read.csv("mesh_seedsize.csv", header = TRUE)
 
 #1. clean up files for comparison
 size2 <- subset(size, select = c(3, 4, 5, 6, 13))
+str(size2)
+size2$species <- as.factor(size2$species)
+size2$lifeform <- as.factor(size2$lifeform)
+size2$dispersal <- as.factor(size2$dispersal)
+size2$size_cat <- as.factor(size2$size_cat)
+size2$suc_affinity <- as.factor(size2$suc_affinity)
+
 
 # turn from long to wide
 spp_abund2 <- spread(spp_abund, meshtype, seednum)
@@ -149,21 +156,39 @@ str(adults2)
 adults2$species <- as.factor(adults2$species)
 adults2$species <- tolower(adults2$species)
 
-adult_mesh <- merge(size_mesh2, adults2, by = "species")
+adult_mesh <- merge(size_mesh, adults2, by = "species")
 adult_mesh$species <- as.factor(adult_mesh$species)
 adult_mesh$lifeform <- as.factor(adult_mesh$lifeform)
 adult_mesh$size_cat <- as.factor(adult_mesh$size_cat)
 adult_mesh$adult <- as.factor(adult_mesh$adult)
-adult_mesh$meshtype <- as.factor(adult_mesh$meshtype)
 adult_mesh$suc_affinity <- as.factor(adult_mesh$suc_affinity)
 adult_mesh$dispersal <- as.factor(adult_mesh$dispersal)
+str(adult_mesh)
 
-mesh_yes <- filter(adult_mesh, adult =="y")
-summary(mesh_yes)
+#Consider breaking into four different groups: 
+# question: are there differences in what the mesh traps are catching based on seed source? first filter by which trap is catching it and then by seed source.
+# filter to create file of what's captured in regular mesh only
+mesh_reg <- filter(adult_mesh, meshreg >"0")
 
+#file that filters out whether adults are present in the species caught in the regular mesh
+mesh_reg_yes <- filter(mesh_reg, adult == "y")
+mesh_reg_no <- filter(mesh_reg, adult =="n")
 
-mesh_no <- filter(adult_mesh, adult =="n")
-summary(mesh_no)
+# Create a new file with just what's captured in the fine mesh
+mesh_fine <- filter(adult_mesh, meshsmall > "0")
+
+# Create files that filter potential seed source by adult presence in the fine mesh
+mesh_fine_yes <- filter(mesh_fine, adult =="y")
+mesh_fine_no <- filter(mesh_fine, adult =="n")
+
+# compare summaries
+# adults present
+summary(mesh_reg_yes)
+summary(mesh_fine_yes)
+
+# no adult species present
+summary(mesh_reg_no)
+summary(mesh_fine_no)
 
 ##### Make tables for paper of species that were caught in small sized mesh but not found there. ####
 
@@ -181,4 +206,8 @@ summary(mesh_no)
 
 
 
-# 
+# writing tidy files
+# change file directory
+
+write.csv(size_mesh, "mesh_size.csv", row.names= FALSE)
+
